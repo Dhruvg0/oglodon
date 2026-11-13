@@ -1,0 +1,23 @@
+# oglodon compare configs/compare_mha_gqa.yaml --out comparison.json
+model:
+  vocab_size: 1            # replaced by the tokenizer's size
+  hidden_size: 64
+  num_layers: 2
+  num_heads: 8
+  num_kv_heads: 8
+  max_seq_len: 96
+variants:
+  mha: {num_kv_heads: 8}
+  gqa: {num_kv_heads: 2}
+  mqa: {num_kv_heads: 1}
+baseline: mha
+data:
+  block_size: 32           # built-in synthetic corpus; set `path: my.txt` for your own text
+  val_fraction: 0.1
+train:
+  steps: 300
+  batch_size: 16
+  learning_rate: 0.003
+  seeds: [0, 1, 2]
+  match_params: true
+  validate: true

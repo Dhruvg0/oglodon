@@ -1,0 +1,30 @@
+site_name: Oglodon
+site_description: Build, train, understand and verify Transformers
+repo_url: https://github.com/Dhruvg0/Oglodon
+docs_dir: docs
+theme:
+  name: mkdocs
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Guides:
+      - Training: training.md
+      - Data and tokenization: data-and-tokenization.md
+      - Generation: generation.md
+      - Evaluation: evaluation.md
+      - Quantization: quantization.md
+      - Experiments: experiments.md
+      - Interoperability: interoperability.md
+      - Performance and scaling: performance-and-scaling.md
+  - Verification:
+      - verify (any model): verify.md
+      - validate (Oglodon): validation.md
+  - Reference:
+      - Command line: cli.md
+      - Model configuration: configuration.md
+      - Architecture: architecture.md
+  - Help:
+      - Troubleshooting: troubleshooting.md
+      - Limitations: limitations.md
+      - Contributing: contributing.md
+      - Publishing: publishing.md

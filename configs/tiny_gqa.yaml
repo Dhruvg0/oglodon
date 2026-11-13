@@ -1,0 +1,14 @@
+# oglodon validate configs/tiny_gqa.yaml --out validation_report.json
+model:
+  vocab_size: 64
+  hidden_size: 64
+  num_layers: 2
+  num_heads: 8
+  num_kv_heads: 2        # GQA; 8 = MHA, 1 = MQA
+  max_seq_len: 64
+  eos_token_id: 1
+  pad_token_id: 0
+validation:
+  device: cpu
+  dtype: float32
+  seed: 0

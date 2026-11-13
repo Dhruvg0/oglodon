@@ -1,0 +1,10 @@
+# oglodon compare configs/mha.yaml configs/gqa.yaml --out comparison.json
+model:
+  vocab_size: 1            # replaced by the tokenizer's size
+  hidden_size: 64
+  num_layers: 2
+  num_heads: 8
+  num_kv_heads: 8
+  max_seq_len: 96
+data: {block_size: 32, val_fraction: 0.1}
+train: {steps: 200, batch_size: 16, learning_rate: 0.003, seeds: [0, 1, 2], match_params: true, validate: true}

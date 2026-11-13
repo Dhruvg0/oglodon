@@ -1,0 +1,24 @@
+# Runs the suite and the GPU runbook on a self-hosted runner that has an NVIDIA GPU (label: gpu).
+# NOTE: this workflow has not been executed by the author; register a runner with the `gpu` label first.
+name: gpu
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1"
+jobs:
+  cuda:
+    runs-on: [self-hosted, gpu]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: python -c "import torch; assert torch.cuda.is_available(), 'no CUDA device'"
+      - run: pytest -m "not slow"
+      - run: bash scripts/gpu_check.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gpu-reports
+          path: reports/

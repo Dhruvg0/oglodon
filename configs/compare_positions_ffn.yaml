@@ -1,0 +1,18 @@
+# Position methods and feed-forward variants on the same data and budget:
+#   oglodon compare configs/compare_positions_ffn.yaml --out positions.json --plot
+model:
+  vocab_size: 1
+  hidden_size: 64
+  num_layers: 2
+  num_heads: 8
+  num_kv_heads: 8
+  max_seq_len: 96
+variants:
+  rope: {}
+  learned: {use_rope: false}
+  alibi: {use_rope: false, use_alibi: true}
+  geglu: {ffn_activation: gelu}
+  relu2: {ffn_activation: relu2}
+baseline: rope
+data: {block_size: 32, val_fraction: 0.1}
+train: {steps: 200, batch_size: 16, learning_rate: 0.003, seeds: [0, 1, 2], match_params: true, validate: true}
