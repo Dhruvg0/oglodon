@@ -374,7 +374,7 @@ export_hf(model, "hf_out")  # AutoModelForCausalLM.from_pretrained("hf_out"); th
 
 Training at scale: `Trainer(..., gradient_checkpointing=True)`, `compile=True`, `precision="bf16"`, and
 `distributed=True` under `torchrun` (see `oglodon.training.distributed`). The multi-process path is tested on CPU
-(gloo); the GPU variants have not been run here.
+(gloo); multi-GPU (NCCL) has not been run.
 
 ## Tokenization and data
 
@@ -433,12 +433,12 @@ run automatically when a GPU is present.
   `TypeError`: save the Hugging Face tokenizer yourself next to the checkpoint.
 * `BPETokenizer` is pure Python (about 4-5 MB/s per core); for very large corpora use a Rust tokenizer through
   `HFTokenizerAdapter`.
-* Everything was developed and tested on **CPU only**. CUDA execution and `fp16` mixed precision (code paths exist; validation reports them `unsupported` without CUDA) have **not** been run; bf16 autocast was run on CPU only.
+* Developed and tested on CPU (Linux, plus the test suite on Windows). On one Tesla T4 (Colab) the test suite, `validate`, `verify`, bf16 and fp16 steps were run once; multi-GPU and FlashAttention kernels have **not** been run.
 * Model loading from a different version of Oglodon is not guaranteed; the format is pre-1.0.
 
 ## Roadmap
 
-Next: run the CUDA/bf16 checks on real hardware, converters for architectures that need new layers (Gemma, Phi,
+Next: multi-GPU and FlashAttention runs, converters for architectures that need new layers (Gemma, Phi,
 Mixtral/MoE), FSDP, 4-bit quantization, a trimmed/paged KV cache, more validators (RoPE extrapolation), a docs site.
 
 ## Contributing

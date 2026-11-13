@@ -4,8 +4,9 @@ Stated plainly so you can decide whether Oglodon fits.
 
 * **Scale**: one machine, data-parallel only. No FSDP, tensor or pipeline parallelism, no pretrained weights, no serving
   engine; quantization is int8 weight-only (no 4-bit, no speed gain on CPU).
-* **Not run on GPU**: CUDA, fp16, bf16 on GPU, FlashAttention kernels and multi-GPU training have code paths and CPU
-  tests but no GPU execution by the author. Use `scripts/gpu_check.sh`.
+* **Little GPU testing**: the test suite, `validate`, `verify`, bf16 and fp16 steps were run once on a single Tesla T4
+  (see [Performance and scaling](performance-and-scaling.md)). Multi-GPU, FlashAttention kernels and other GPUs were
+  not run. Use `scripts/gpu_check.sh` on your hardware.
 * **Architectures**: one family (decoder-only, RoPE/learned/ALiBi positions, MHA/GQA/MQA, SwiGLU/GELU-style MLPs). No MoE,
   state-space models, encoder-decoder or multimodal models. Converters cover Llama, Mistral and Qwen2.
 * **Verification is not proof**: `verify` and `validate` catch classes of bugs (leaks, off-by-ones, cache errors,

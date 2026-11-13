@@ -7,12 +7,14 @@ trains data-parallel automatically.
 
 from __future__ import annotations
 
+import functools
+import gc
 import json
 import time
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeVar, cast
 
 import torch
 
@@ -20,6 +22,8 @@ from .config import OglodonConfig
 from .data.corpus import TokenFile, collect_text_files, read_texts, tokenize_to_bin
 from .models.gpt import Oglodon
 from .tokenization import BPETokenizer, CharTokenizer, load_tokenizer
+
+_F = TypeVar("_F", bound=Callable[..., Any])
 
 SETTINGS_FILE = "train_settings.json"
 REPORT_FILE = "training_report.json"
@@ -143,6 +147,25 @@ def _prepare(data: Any, out: Path, s: TrainSettings, log: Callable[[str], None])
     log(f"tokenised {len(tf):,} tokens in {time.perf_counter() - t0:.1f}s")
 
 
+def _release_memory_maps(fn: _F) -> _F:
+    """Run ``fn`` and then collect garbage so the memory-mapped token file is closed before the caller continues.
+
+    The datasets, data loaders and trainer reference each other, so Python may keep the mapping alive for a while after
+    training returns. On Windows a file that is still mapped cannot be overwritten (``--overwrite`` or a second run into
+    the same folder failed with ``OSError: [Errno 22]``), so the mapping is released deterministically here.
+    """
+
+    @functools.wraps(fn)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            gc.collect()
+
+    return cast(_F, wrapper)
+
+
+@_release_memory_maps
 def train_from_files(
     data: str | Path | Sequence[str | Path],
     out: str | Path,

@@ -242,3 +242,21 @@ def test_qwen2_per_layer_sliding_window_is_refused():
         hf_llama_config_to_oglodon(
             qwen2(use_sliding_window=True, sliding_window=4, max_window_layers=1).config
         )
+
+
+def test_low_precision_near_ties_do_not_fail_greedy_equivalence_but_real_disagreement_does():
+    """bfloat16 plus large random weights makes free-running greedy decoding diverge at near-ties; that is not a bug."""
+    m = llama().to(torch.bfloat16)
+    r = verify_conversion(m, from_hf_llama)
+    g = r.get("equivalence.greedy_generation")
+    assert g.status is Status.PASS, g.detail
+    # a genuinely different function must still fail the same check
+    import oglodon.convert.hf as h
+
+    real = h._rope_rows
+    h._rope_rows = lambda w, n: w
+    try:
+        bad = verify_conversion(llama(), from_hf_llama)
+    finally:
+        h._rope_rows = real
+    assert bad.get("equivalence.greedy_generation").status is Status.FAIL

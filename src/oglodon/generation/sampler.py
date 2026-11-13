@@ -62,6 +62,11 @@ def sample_next_token(
         return logits.argmax(dim=-1)
     logits = filter_logits(logits.float() / temperature, top_k, top_p, min_p)
     probs = logits.softmax(dim=-1)
+    if generator is not None and generator.device != probs.device:
+        # a CPU generator (the usual way to seed) with CUDA logits: draw on the generator's device
+        return (
+            torch.multinomial(probs.to(generator.device), 1, generator=generator).squeeze(-1).to(probs.device)
+        )
     return torch.multinomial(probs, 1, generator=generator).squeeze(-1)
 
 

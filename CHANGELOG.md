@@ -21,7 +21,7 @@
 - **Training**: gradient checkpointing (`Trainer(gradient_checkpointing=True)`, identical gradients), optional
   `torch.compile` (`compile=True`), and multi-process data parallelism (`distributed=True`, `setup_distributed`,
   `distributed_loader`): losses are weighted by the global token count, and two CPU processes reproduce the
-  single-process update (tested with gloo). A GPU workflow file is included but has not been run.
+  single-process update (tested with gloo). A GPU workflow file is included but has not been run; `scripts/gpu_check.sh` was run once on a Tesla T4.
 
 - **No-code workflow**: `oglodon train DATA --out DIR` (files or folders to BPE tokenizer, token file, training,
   checkpoint and `training_report.json`; `--config`, exact `--resume`, refuses to overwrite a model, automatic
@@ -43,6 +43,10 @@
   is what allows FlashAttention kernels on supported GPUs. Results are the same as the masked path (tested).
 
 ### Fixed
+- Sampling with a CPU-seeded `torch.Generator` on a CUDA model crashed (found by running `oglodon validate` on a Tesla T4).
+- `verify --cross-check`: the greedy-generation comparison no longer fails on harmless near-ties in bfloat16; it now
+  compares the two implementations on the tokens the source generated wherever the choice is clear (a real difference
+  still fails). Found by cross-checking SmolLM2-135M.
 - README: checkpoints do store `BPETokenizer` (the text claimed only `CharTokenizer`); the pure-Python BPE speed is stated.
 
 ### Not done (on purpose)

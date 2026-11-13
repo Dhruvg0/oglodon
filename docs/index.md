@@ -33,6 +33,7 @@ not Oglodon.
 
 ## Verified versus unverified
 
-Everything in these docs that says "tested" was run on CPU (Linux, Python 3.13). CUDA, fp16, bf16 on GPU,
-FlashAttention kernels and multi-GPU training have **not** been executed by the author; the docs mark those paths as
-unverified, and `scripts/gpu_check.sh` is how you verify them on your hardware.
+Everything in these docs that says "tested" was run on CPU (Linux, Python 3.11 and 3.13, and the test suite on Windows).
+A single Tesla T4 on Colab ran the test suite, `validate`, `verify`, bf16 and fp16 once. FlashAttention kernels and
+multi-GPU training have **not** been executed; the docs mark those paths as unverified, and `scripts/gpu_check.sh` is
+how you verify them on your hardware.

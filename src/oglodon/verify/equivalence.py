@@ -155,12 +155,32 @@ def verify_conversion(
             gb = b.generate(x, max_new_tokens=n, eos_token_id=None)[:, x.shape[1] :]
         if ga is None:
             raise NotImplementedError("source model has no Hugging Face-style generate()")
-        same = torch.equal(ga, gb)
+        if torch.equal(ga, gb):
+            return Outcome(Status.PASS, f"greedy {n}-token continuations (cached) are identical")
+        # Free-running greedy decoding amplifies a tiny numerical difference once two tokens are nearly tied (this
+        # is common in bfloat16 and with large random weights). So check teacher-forced instead: on the tokens the
+        # source model generated, both implementations must pick the same next token wherever the source's top-1
+        # lead over top-2 is larger than the logit tolerance.
+        full = torch.cat([x, ga.to(x.device)], dim=1)
+        with torch.no_grad():
+            la, lb = _logits(a, full).double(), _logits(b, full).double()
+        limit = tol * max(1.0, float(la.abs().max()))
+        top2 = la.topk(2, dim=-1).values
+        decisive = (top2[..., 0] - top2[..., 1]) > 2 * limit
+        decisive = decisive[:, x.shape[1] - 1 : -1]
+        disagree = (la.argmax(-1) != lb.argmax(-1))[:, x.shape[1] - 1 : -1] & decisive
+        ties = int((~decisive).sum())
+        if bool(disagree.any()):
+            return Outcome(
+                Status.FAIL,
+                f"the implementations pick different tokens where the choice is clear: {int(disagree.sum())} of "
+                f"{decisive.numel()} generated positions (continuations {ga.tolist()} vs {gb.tolist()})",
+            )
         return Outcome(
-            Status.PASS if same else Status.FAIL,
-            f"greedy {n}-token continuations (cached) are identical"
-            if same
-            else f"greedy continuations differ: {ga.tolist()} vs {gb.tolist()}",
+            Status.PASS,
+            f"free-running greedy continuations differ, but only after near-ties (top-1 lead below twice the "
+            f"logit tolerance); both implementations agree on all {int(decisive.sum())} clear positions "
+            f"({ties} near-tied positions not compared)",
         )
 
     add("equivalence.logits_given_weights", lambda: logits_check(False))

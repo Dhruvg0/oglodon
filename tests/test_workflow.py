@@ -208,3 +208,20 @@ def test_train_under_torchrun_with_two_processes(corpus, tmp_path):
         and rep["result"]["val_perplexity"] < rep["result"]["uniform_baseline_perplexity"]
     )
     assert "2 processes" in r.stdout and r.stdout.count("checkpoint written") == 1  # only rank 0 talks
+
+
+def test_training_releases_the_memory_mapped_corpus(corpus, tmp_path):
+    """On Windows a still-mapped corpus.bin cannot be overwritten, so no mapping may outlive the call."""
+    import gc
+
+    import numpy as np
+
+    out = tmp_path / "run"
+    train_from_files(str(corpus), out, TrainSettings(steps=4, hidden_size=32, num_layers=1, num_heads=4,
+                     block_size=32, vocab_size=290, batch_size=8), device="cpu", logger=None)  # fmt: skip
+    gc.disable()  # a collection must not be what releases it
+    try:
+        alive = [o for o in gc.get_objects() if type(o) is np.memmap and "corpus.bin" in str(o.filename)]
+    finally:
+        gc.enable()
+    assert alive == []

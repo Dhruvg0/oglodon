@@ -110,3 +110,17 @@ def test_temperature_changes_sharpness():
     hot = sample_next_token(logits, temperature=5.0, generator=g)
     cold = sample_next_token(logits, temperature=0.1, generator=torch.Generator().manual_seed(0))
     assert (cold == 0).float().mean() > 0.99 and (hot == 0).float().mean() < 0.6
+
+
+def test_sampling_with_a_generator_on_another_device_is_handled():
+    import torch
+
+    from oglodon.generation.sampler import sample_next_token as sample_next
+
+    logits = torch.randn(3, 10)
+    g1, g2 = torch.Generator().manual_seed(1), torch.Generator().manual_seed(1)
+    assert torch.equal(sample_next(logits, 1.0, generator=g1), sample_next(logits, 1.0, generator=g2))
+    if torch.cuda.is_available():  # the Colab bug: CPU generator, CUDA logits
+        out = sample_next(logits.cuda(), 1.0, generator=torch.Generator().manual_seed(1))
+        assert out.device.type == "cuda"
+        assert torch.equal(out.cpu(), sample_next(logits, 1.0, generator=torch.Generator().manual_seed(1)))
