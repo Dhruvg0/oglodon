@@ -179,6 +179,11 @@ def test_cli_cross_check(tmp_path):
     d = json.loads(out.read_text())
     assert d["metadata"]["cross_check"] == "oglodon.convert.from_hf_llama"
     assert any(c["name"] == "equivalence.padded_logits" and c["status"] == "pass" for c in d["checks"])
+    # the cross-check runs at the precision that was asked for, not at the model's own
+    out2 = tmp_path / "r2.json"
+    main(["verify", "--hf-config", str(cfg), "--cross-check", "--dtype", "bfloat16", "--out", str(out2)])
+    eq = [c for c in json.loads(out2.read_text())["checks"] if c["name"].startswith("equivalence.")]
+    assert eq and all(c["dtype"] == "bfloat16" for c in eq)
 
 
 # ------------------------------------------------------------------------------ trained (not random) weights
@@ -249,7 +254,13 @@ def test_low_precision_near_ties_do_not_fail_greedy_equivalence_but_real_disagre
     m = llama().to(torch.bfloat16)
     r = verify_conversion(m, from_hf_llama)
     g = r.get("equivalence.greedy_generation")
-    assert g.status is Status.PASS, g.detail
+    assert g.status in (Status.PASS, Status.SKIPPED), (
+        g.detail
+    )  # never a failure, and never a pass over 0 positions
+    if g.status is Status.PASS:
+        assert "all 0 clear" not in g.detail and "at all 0" not in g.detail
+    f32 = verify_conversion(llama(), from_hf_llama).get("equivalence.greedy_generation")
+    assert f32.status is Status.PASS
     # a genuinely different function must still fail the same check
     import oglodon.convert.hf as h
 

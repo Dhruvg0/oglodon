@@ -43,9 +43,9 @@ Call `loader.sampler.set_epoch(epoch)` yourself if you iterate epochs manually. 
 `scripts/gpu_check.sh` was run once on a Tesla T4 on Google Colab (PyTorch 2.14.1+cu130, CUDA 13.0, Python 3.13), 13 Nov 2026:
 
 * the whole test suite, with the CUDA-dependent tests running instead of skipping: no failures (3 skipped);
-* `oglodon validate` on CUDA: 24 passed and 1 failed. The failure was a real bug: `generate(..., generator=...)` crashed
-  when the model was on CUDA and the generator on the CPU (the usual way to seed). It is fixed in the sampler and has a
-  regression test, but the fix has **not** been re-run on a GPU;
+* `oglodon validate` on CUDA: the first run passed 24 of 25 checks. The failure was a real bug: `generate(...,
+  generator=...)` crashed when the model was on CUDA and the generator on the CPU (the usual way to seed). After the
+  fix, a second run on the same T4 passed 25 of 25 (1 skipped because no tokenizer was given) and the script exited 0;
 * `oglodon verify` on CUDA in float32 and bfloat16: all 18 checks passed in both;
 * fp16 mixed-precision training steps: passed.
 

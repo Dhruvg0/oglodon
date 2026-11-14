@@ -443,7 +443,18 @@ def _verify(args: argparse.Namespace) -> int:
         from .convert import from_hf_llama
         from .verify import verify_conversion
 
-        eq = verify_conversion(model, from_hf_llama, seed=args.seed)
+        xmodel = model
+        if args.dtype or args.device:  # the cross-check must run at the precision/device that was asked for
+            import copy
+
+            import torch
+
+            xmodel = copy.deepcopy(model)
+            if args.dtype:
+                xmodel = xmodel.to(getattr(torch, args.dtype))
+            if args.device:
+                xmodel = xmodel.to(args.device)
+        eq = verify_conversion(xmodel, from_hf_llama, seed=args.seed)
         report.checks.extend(eq.checks)
         report.metadata["cross_check"] = "oglodon.convert.from_hf_llama"
     print(f"source: {source}")

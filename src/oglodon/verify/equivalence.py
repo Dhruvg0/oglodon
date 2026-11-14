@@ -164,23 +164,37 @@ def verify_conversion(
         full = torch.cat([x, ga.to(x.device)], dim=1)
         with torch.no_grad():
             la, lb = _logits(a, full).double(), _logits(b, full).double()
-        limit = tol * max(1.0, float(la.abs().max()))
+        # If both implementations' logits differ by at most d everywhere, a token whose top-1 lead exceeds 2d must
+        # be the top-1 of both. Using the measured d (not the generous tolerance) keeps the comparison meaningful.
+        d = float((la - lb).abs().max())
+        if d > tol * max(1.0, float(la.abs().max())):
+            return Outcome(
+                Status.FAIL,
+                f"greedy continuations differ and the logits differ by {d:.2e}, beyond the tolerance "
+                f"({ga.tolist()} vs {gb.tolist()})",
+            )
         top2 = la.topk(2, dim=-1).values
-        decisive = (top2[..., 0] - top2[..., 1]) > 2 * limit
+        decisive = (top2[..., 0] - top2[..., 1]) > 2 * d
         decisive = decisive[:, x.shape[1] - 1 : -1]
         disagree = (la.argmax(-1) != lb.argmax(-1))[:, x.shape[1] - 1 : -1] & decisive
-        ties = int((~decisive).sum())
+        clear = int(decisive.sum())
         if bool(disagree.any()):
             return Outcome(
                 Status.FAIL,
                 f"the implementations pick different tokens where the choice is clear: {int(disagree.sum())} of "
                 f"{decisive.numel()} generated positions (continuations {ga.tolist()} vs {gb.tolist()})",
             )
+        if clear == 0:
+            return Outcome(
+                Status.SKIPPED,
+                f"free-running greedy continuations differ and every generated position is a near-tie at this "
+                f"precision (largest logit difference {d:.2e}), so generation could not be compared; the logit "
+                f"checks above are the evidence. Run in float32 for a meaningful comparison",
+            )
         return Outcome(
             Status.PASS,
-            f"free-running greedy continuations differ, but only after near-ties (top-1 lead below twice the "
-            f"logit tolerance); both implementations agree on all {int(decisive.sum())} clear positions "
-            f"({ties} near-tied positions not compared)",
+            f"free-running greedy continuations differ, but only after near-ties; both implementations pick the "
+            f"same token at all {clear} clear positions ({decisive.numel() - clear} near-tied positions not compared)",
         )
 
     add("equivalence.logits_given_weights", lambda: logits_check(False))

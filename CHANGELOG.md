@@ -44,9 +44,12 @@
 
 ### Fixed
 - Sampling with a CPU-seeded `torch.Generator` on a CUDA model crashed (found by running `oglodon validate` on a Tesla T4).
-- `verify --cross-check`: the greedy-generation comparison no longer fails on harmless near-ties in bfloat16; it now
-  compares the two implementations on the tokens the source generated wherever the choice is clear (a real difference
-  still fails). Found by cross-checking SmolLM2-135M.
+- `verify --cross-check` ignored `--dtype` and `--device`: the comparison with Hugging Face always ran at the source
+  model's own precision (bfloat16 for SmolLM2), although the report header said float32. It now runs at the requested
+  precision and device. Found by reading the SmolLM2-135M log.
+- `verify --cross-check`: the greedy-generation comparison no longer fails on harmless near-ties. It compares the two
+  implementations on the tokens the source generated wherever the top-1 lead exceeds twice the measured logit
+  difference. A real difference still fails, and if no position is decisive the check is reported as skipped, never passed.
 - README: checkpoints do store `BPETokenizer` (the text claimed only `CharTokenizer`); the pure-Python BPE speed is stated.
 
 ### Not done (on purpose)

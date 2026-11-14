@@ -43,8 +43,15 @@ oglodon verify --hf ./my-llama --cross-check
 
 Converts the Hugging Face model to Oglodon and compares the two independent implementations with identical weights
 (logits, padded logits, loss, cached greedy generation). On random and briefly trained weights they agree to about
-3e-6. Run it on your real model to get evidence about *that* model; this repository could not download pretrained
-weights, so that run is yours to do. Details: [verify](verify.md).
+3e-6. Run it on your real model to get evidence about *that* model. Details: [verify](verify.md).
+
+Use `--dtype float32` for a meaningful comparison: the cross-check runs at the precision you ask for, and bfloat16
+logits differ by about 3% of their scale, so only a loose tolerance can be applied there.
+
+**One real model so far.** `HuggingFaceTB/SmolLM2-135M` (Llama architecture) was cross-checked once on a CPU. All
+structure, causality, cache, numerics, gradient and logit-agreement checks passed. That run happened at bfloat16 (the
+model's own precision) because the cross-check ignored `--dtype` at the time (since fixed); its greedy-generation
+comparison compared no positions. A float32 re-run with the fixed code has **not** been done yet.
 
 ## Running standard benchmarks
 
