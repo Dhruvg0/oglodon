@@ -58,13 +58,14 @@ trained behaviour and the report labels which weights each message refers to.
   weights; Hugging Face Llama, Mistral and Qwen2 are supported through `oglodon.convert.from_hf_llama`). A wrong RoPE
   re-ordering or a wrong softmax scale is caught by the cross-check (see `tests/test_convert_equivalence.py`).
 * Trained, not downloaded: the tests also verify models trained for a few hundred steps in the test run (loss must
-  fall by more than 1 nat), because trained weights behave differently from random ones. No pretrained checkpoint
-  from the Hugging Face Hub was run (the development sandbox could not reach it).
+  fall by more than 1 nat), because trained weights behave differently from random ones. One pretrained
+  checkpoint was run: `HuggingFaceTB/SmolLM2-135M` (see [Interoperability](interoperability.md)); no other.
 * Padding invariance needs both `attention_mask` and `position_ids`; models that derive positions inside
   `generate()` only are reported skipped for that check.
 * The finite-difference check tries three step sizes because many libraries compute part of their maths (for
   example the softmax) in float32 even for float64 models; the report says when the result is limited by that.
 * Tested on CPU only, on Oglodon, a from-scratch PyTorch model, and Hugging Face GPT-2, Llama, Mistral, Qwen2, Gemma, Phi,
-  GPT-NeoX, OPT, Falcon, Bloom and Mixtral with random weights. Pretrained checkpoints, Mamba/state-space and
-  encoder-decoder models, and CUDA were not run. Bloom (ALiBi, no `position_ids`) skips the padding check; Mixtral's
+  GPT-NeoX, OPT, Falcon, Bloom and Mixtral with random weights. One pretrained checkpoint (SmolLM2-135M, CPU, float32) was run, and
+  `verify` on an Oglodon model was run on CUDA. Other pretrained checkpoints, Mamba/state-space and encoder-decoder models,
+  and `verify` on a non-Oglodon model on CUDA were not run. Bloom (ALiBi, no `position_ids`) skips the padding check; Mixtral's
   float64 checks are `unsupported` where its expert kernels reject float64.

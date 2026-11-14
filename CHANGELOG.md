@@ -46,7 +46,7 @@
 - Sampling with a CPU-seeded `torch.Generator` on a CUDA model crashed (found by running `oglodon validate` on a Tesla T4).
 - `verify --cross-check` ignored `--dtype` and `--device`: the comparison with Hugging Face always ran at the source
   model's own precision (bfloat16 for SmolLM2), although the report header said float32. It now runs at the requested
-  precision and device. Found by reading the SmolLM2-135M log.
+  precision and device. Found by reading the SmolLM2-135M log; the float32 re-run then passed all 23 checks.
 - `verify --cross-check`: the greedy-generation comparison no longer fails on harmless near-ties. It compares the two
   implementations on the tokens the source generated wherever the top-1 lead exceeds twice the measured logit
   difference. A real difference still fails, and if no position is decisive the check is reported as skipped, never passed.

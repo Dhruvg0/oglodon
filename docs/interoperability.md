@@ -48,10 +48,12 @@ Converts the Hugging Face model to Oglodon and compares the two independent impl
 Use `--dtype float32` for a meaningful comparison: the cross-check runs at the precision you ask for, and bfloat16
 logits differ by about 3% of their scale, so only a loose tolerance can be applied there.
 
-**One real model so far.** `HuggingFaceTB/SmolLM2-135M` (Llama architecture) was cross-checked once on a CPU. All
-structure, causality, cache, numerics, gradient and logit-agreement checks passed. That run happened at bfloat16 (the
-model's own precision) because the cross-check ignored `--dtype` at the time (since fixed); its greedy-generation
-comparison compared no positions. A float32 re-run with the fixed code has **not** been done yet.
+**One real model so far.** `HuggingFaceTB/SmolLM2-135M` (Llama architecture, 135M parameters) was cross-checked on a CPU
+in float32 on 14 Nov 2026 (transformers 5.22): all 23 checks passed. Oglodon and Hugging Face logits differ by at most
+7.6e-5 with the downloaded weights and 1.0e-4 with large random weights, the next-token loss differs by 2.8e-8, and the
+10-token cached greedy continuations are identical. An earlier run of the same model at bfloat16 passed too but only
+within a loose tolerance (logit difference 0.66), and compared no generated positions. Only this one checkpoint has been
+run, on CPU; other models, larger sizes and GPU cross-checks are untested.
 
 ## Running standard benchmarks
 
