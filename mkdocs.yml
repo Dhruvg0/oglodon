@@ -23,6 +23,7 @@ nav:
       - Command line: cli.md
       - Model configuration: configuration.md
       - Architecture: architecture.md
+      - Python and feature reference: reference.md
   - Help:
       - Troubleshooting: troubleshooting.md
       - Limitations: limitations.md

@@ -10,6 +10,7 @@ not Oglodon.
 | I want to... | Read |
 |---|---|
 | install it and train a first model on my own text in minutes | [Getting started](getting-started.md) |
+| look up Python APIs and every feature | [Python and feature reference](reference.md) |
 | look up a command or flag | [Command-line reference](cli.md) |
 | train, resume, and scale training | [Training](training.md) |
 | prepare data and tokenizers | [Data and tokenization](data-and-tokenization.md) |
