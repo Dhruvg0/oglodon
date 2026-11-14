@@ -206,12 +206,13 @@ class BPETokenizer:
     # ------------------------------------------------------------------ persistence
     def save(self, path: str | Path) -> None:
         Path(path).write_text(
-            json.dumps({"type": "bpe", "special_tokens": self.special_tokens, "merges": self.merges})
+            json.dumps({"type": "bpe", "special_tokens": self.special_tokens, "merges": self.merges}),
+            encoding="utf-8",
         )
 
     @classmethod
     def load(cls, path: str | Path) -> BPETokenizer:
-        data = json.loads(Path(path).read_text())
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         if data.get("type") != "bpe":
             raise ValueError("not a BPETokenizer file")
         return cls([tuple(m) for m in data["merges"]], data["special_tokens"])

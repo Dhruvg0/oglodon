@@ -172,4 +172,4 @@ class OglodonConfig:
 
     @classmethod
     def load(cls, path: str | Path) -> OglodonConfig:
-        return cls.from_dict(json.loads(Path(path).read_text()))
+        return cls.from_dict(json.loads(Path(path).read_text(encoding="utf-8")))

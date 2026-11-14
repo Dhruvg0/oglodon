@@ -172,7 +172,7 @@ class ValidationReport:
 
     @classmethod
     def load(cls, path: str | Path) -> ValidationReport:
-        data = json.loads(Path(path).read_text())
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         checks = []
         for c in data["checks"]:
             c = dict(c)

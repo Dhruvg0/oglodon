@@ -21,7 +21,7 @@ def load_config_file(path: str | Path) -> dict[str, Any]:
     """Read a YAML or JSON mapping from ``path``."""
     path = Path(path)
     try:
-        text = path.read_text()
+        text = path.read_text(encoding="utf-8")
     except OSError as e:
         raise SystemExit(f"error: cannot read config {path}: {e.strerror or e}") from e
     if path.suffix.lower() == ".json":
@@ -185,7 +185,7 @@ def _compare(args: argparse.Namespace) -> int:
     print(report.to_markdown())
     if args.out:
         report.save(args.out)
-        Path(args.out).with_suffix(".md").write_text(report.to_markdown())
+        Path(args.out).with_suffix(".md").write_text(report.to_markdown(), encoding="utf-8")
         print(f"report written to {args.out} and {Path(args.out).with_suffix('.md')}")
         if args.plot:
             print(f"loss curves written to {report.plot(Path(args.out).with_suffix('.png'))}")
@@ -282,7 +282,7 @@ def _quantize(args: argparse.Namespace) -> int:
         if args.text:
             if tokenizer is None:
                 raise ValueError("--text needs a tokenizer.json in the checkpoint")
-            ids = tokenizer.encode(Path(args.text).read_text())
+            ids = tokenizer.encode(Path(args.text).read_text(encoding="utf-8"))
             report.update(quantization_report(model, q, ids, block_size=args.block_size))
         else:
             report.update(bytes_reference=model_nbytes(model), bytes_quantized=model_nbytes(q))
@@ -295,7 +295,7 @@ def _quantize(args: argparse.Namespace) -> int:
     weights_before = (Path(args.checkpoint) / "model.safetensors").stat().st_size
     weights_after = (out / "model.safetensors").stat().st_size
     report.update(file_bytes_reference=weights_before, file_bytes_quantized=weights_after)
-    (out / "quantization_report.json").write_text(json.dumps(report, indent=2) + "\n")
+    (out / "quantization_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(
         f"quantized {len(q.quantization_info['modules'])} linear layers to int8 (group size "
         f"{q.quantization_info['group_size'] or 'per channel'})"
@@ -340,7 +340,7 @@ def _eval(args: argparse.Namespace) -> int:
     result: dict[str, Any] = {"checkpoint": str(args.checkpoint), "device": args.device or "cpu"}
     try:
         if args.text:
-            ids = tokenizer.encode(Path(args.text).read_text())
+            ids = tokenizer.encode(Path(args.text).read_text(encoding="utf-8"))
             r = perplexity(
                 model, ids, block_size=args.block_size, stride=args.stride, batch_size=args.batch_size
             )
@@ -376,7 +376,7 @@ def _eval(args: argparse.Namespace) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 2
     if args.out:
-        Path(args.out).write_text(json.dumps(result, indent=2, default=str) + "\n")
+        Path(args.out).write_text(json.dumps(result, indent=2, default=str) + "\n", encoding="utf-8")
         print(f"report written to {args.out}")
     return 0
 
@@ -397,7 +397,7 @@ def _load_verify_target(args: argparse.Namespace):
             return AutoModelForCausalLM.from_pretrained(args.hf), f"hf:{args.hf}"
         path = Path(args.hf_config)
         cfg = (
-            AutoConfig.for_model(**json.loads(path.read_text()))
+            AutoConfig.for_model(**json.loads(path.read_text(encoding="utf-8")))
             if path.is_file()
             else AutoConfig.from_pretrained(str(path))
         )

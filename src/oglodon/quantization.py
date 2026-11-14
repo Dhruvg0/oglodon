@@ -155,12 +155,12 @@ def apply_quantized_structure(model: Any, info: dict[str, Any]) -> Any:
 def write_quantization_info(model: Any, path: str | Path) -> None:
     info = getattr(model, "quantization_info", None)
     if info is not None:
-        (Path(path) / QUANT_FILE).write_text(json.dumps(info, indent=2) + "\n")
+        (Path(path) / QUANT_FILE).write_text(json.dumps(info, indent=2) + "\n", encoding="utf-8")
 
 
 def read_quantization_info(path: str | Path) -> dict[str, Any] | None:
     f = Path(path) / QUANT_FILE
-    return json.loads(f.read_text()) if f.exists() else None
+    return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
 
 
 def model_nbytes(model: nn.Module) -> int:

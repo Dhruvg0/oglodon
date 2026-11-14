@@ -32,7 +32,7 @@ def check_metadata(meta: dict) -> list[tuple[str, str, str]]:
     out: list[tuple[str, str, str]] = []
     proj = meta["project"]
     version = proj["version"]
-    init = (ROOT / "src" / "oglodon" / "__init__.py").read_text()
+    init = (ROOT / "src" / "oglodon" / "__init__.py").read_text(encoding="utf-8")
     m = re.search(r'__version__\s*=\s*"([^"]+)"', init)
     out.append(
         (
@@ -41,7 +41,7 @@ def check_metadata(meta: dict) -> list[tuple[str, str, str]]:
             f"pyproject {version}, __init__ {m.group(1) if m else 'missing'}",
         )
     )
-    changelog = (ROOT / "CHANGELOG.md").read_text()
+    changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     ok = re.search(rf"^## {re.escape(version)}\b", changelog, re.M) is not None
     out.append(
         ("changelog has an entry for this version", "PASS" if ok else "FAIL", f"looking for '## {version}'")
@@ -127,7 +127,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--docs", action="store_true", help="strict mkdocs build (needs the docs extra)")
     ap.add_argument("--check-name", action="store_true", help="ask PyPI whether the project name is free")
     args = ap.parse_args(argv)
-    meta = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    meta = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     results = check_metadata(meta)
     results.append(
         check_name(meta["project"]["name"])

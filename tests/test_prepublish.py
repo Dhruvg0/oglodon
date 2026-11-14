@@ -15,7 +15,7 @@ def test_metadata_checks_catch_placeholder_author_and_pass_the_rest():
     mod = load()
     meta = {
         "project": {
-            "version": "0.4.0",
+            "version": "0.4.1",
             "authors": [{"name": "Oglodon contributors"}],
             "urls": {"Homepage": "https://github.com/Dhruvg0/Oglodon"},
         }

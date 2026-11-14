@@ -75,12 +75,13 @@ class CharTokenizer:
 
     def save(self, path: str | Path) -> None:
         Path(path).write_text(
-            json.dumps({"type": "char", "chars": self.chars, "special_tokens": self.special_tokens})
+            json.dumps({"type": "char", "chars": self.chars, "special_tokens": self.special_tokens}),
+            encoding="utf-8",
         )
 
     @classmethod
     def load(cls, path: str | Path) -> CharTokenizer:
-        data = json.loads(Path(path).read_text())
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
         if data.get("type") != "char":
             raise ValueError("not a CharTokenizer file")
         return cls(data["chars"], data["special_tokens"])
@@ -125,7 +126,7 @@ def load_tokenizer(path: str | Path) -> Any:
     f = Path(path) / "tokenizer.json"
     if not f.exists():
         return None
-    kind = json.loads(f.read_text()).get("type")
+    kind = json.loads(f.read_text(encoding="utf-8")).get("type")
     if kind == "bpe":
         from .bpe import BPETokenizer
 

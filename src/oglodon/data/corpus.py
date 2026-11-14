@@ -83,7 +83,7 @@ class TokenFile:
     @classmethod
     def open(cls, path: str | Path) -> TokenFile:
         path = Path(path)
-        meta = json.loads(path.with_suffix(".json").read_text())
+        meta = json.loads(path.with_suffix(".json").read_text(encoding="utf-8"))
         return cls(path, meta)
 
     @property
@@ -215,5 +215,5 @@ def tokenize_to_bin(
         "files": sources,
         "eos_between_files": eos_between_files,
     }
-    out_path.with_suffix(".json").write_text(json.dumps(meta, indent=2))
+    out_path.with_suffix(".json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
     return TokenFile(out_path, meta)

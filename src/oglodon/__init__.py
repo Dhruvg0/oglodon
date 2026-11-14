@@ -8,6 +8,6 @@ from .config import OglodonConfig
 from .models.gpt import Oglodon, OglodonOutput
 from .training.trainer import Trainer
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = ["Oglodon", "OglodonConfig", "OglodonOutput", "Trainer", "__version__"]

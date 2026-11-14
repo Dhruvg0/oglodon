@@ -118,7 +118,7 @@ def evaluate_multiple_choice(
 def load_jsonl(path: str | Path) -> list[dict[str, Any]]:
     """Read one JSON object per line (blank lines ignored)."""
     out = []
-    for n, line in enumerate(Path(path).read_text().splitlines(), 1):
+    for n, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
         if line.strip():
             try:
                 out.append(json.loads(line))

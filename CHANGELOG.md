@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1
+
+### Fixed
+- Text files (corpus, evaluation text, JSON configs and reports) are now always read and written as UTF-8. On Windows
+  `oglodon eval --text` failed on ordinary UTF-8 text (for example curly quotes) because Python used the system code page.
+
 ## 0.4.0 — research toolkit
 
 ### Added

@@ -201,7 +201,7 @@ def train_from_files(
             if resume:
                 if not (has_model and state_file.exists() and (out / SETTINGS_FILE).exists()):
                     raise ValueError(f"nothing to resume in {out} (need model, trainer state and settings)")
-                saved = TrainSettings.from_dict(json.loads((out / SETTINGS_FILE).read_text()))
+                saved = TrainSettings.from_dict(json.loads((out / SETTINGS_FILE).read_text(encoding="utf-8")))
                 changed = {k: v for k, v in asdict(s).items() if v != asdict(TrainSettings())[k]}
                 s = saved.merged(changed)
                 if "steps" in changed and changed["steps"] != saved.steps:
@@ -223,7 +223,7 @@ def train_from_files(
         etype, _, msg = err.partition(": ")
         raise {"FileNotFoundError": FileNotFoundError, "OSError": OSError}.get(etype, ValueError)(msg)
     if not ctx.is_main:  # settings were written by rank 0 (possibly merged with saved ones on resume)
-        s = TrainSettings.from_dict(json.loads((out / SETTINGS_FILE).read_text()))
+        s = TrainSettings.from_dict(json.loads((out / SETTINGS_FILE).read_text(encoding="utf-8")))
 
     tok = load_tokenizer(out)
     tf = TokenFile.open(out / "data" / "corpus.bin")
@@ -341,7 +341,7 @@ def _write_report(
         },
         "history": r.history,
     }  # fmt: skip
-    r.report_path.write_text(json.dumps(report, indent=2, default=str) + "\n")
+    r.report_path.write_text(json.dumps(report, indent=2, default=str) + "\n", encoding="utf-8")
 
 
 def complete(
